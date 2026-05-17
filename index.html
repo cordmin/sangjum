@@ -6,26 +6,16 @@
         var userAgent = navigator.userAgent.toLowerCase();
         if (userAgent.indexOf("kakaotalk") > -1) {
             location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
-            document.write(
-                '<!DOCTYPE html><html lang="ko"><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>' +
-                '<body style="margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#FDF8F2; font-family:\'Noto Sans KR\', sans-serif; text-align:center;">' +
-                '<div style="font-size:50px; margin-bottom:16px;">🚀</div>' +
-                '<h2 style="color:#3D2B1F; font-size:22px; font-weight:900; margin:0 0 12px 0;">기본 브라우저로 이동했습니다!</h2>' +
-                '<p style="color:#6B5247; font-size:16px; margin:0 0 30px 0; line-height:1.6;">더 쾌적한 사용을 위해<br>크롬이나 사파리 등 새로 열린 창을 이용해주세요.</p>' +
-                '<div style="background-color:#F5DDD2; color:#C4704A; padding:12px 24px; border-radius:20px; font-weight:bold; font-size:14px;">현재 이 카카오톡 창은 닫아주세요 (X)</div>' +
-                '</body></html>'
-            );
+            document.write('<!DOCTYPE html><html lang="ko"><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#FDF8F2; font-family:\'Noto Sans KR\', sans-serif; text-align:center;"><div style="font-size:50px; margin-bottom:16px;">🚀</div><h2 style="color:#3D2B1F; font-size:22px; font-weight:900; margin:0 0 12px 0;">기본 브라우저로 이동했습니다!</h2><p style="color:#6B5247; font-size:16px; margin:0 0 30px 0; line-height:1.6;">더 쾌적한 사용을 위해<br>크롬이나 사파리 등 새로 열린 창을 이용해주세요.</p><div style="background-color:#F5DDD2; color:#C4704A; padding:12px 24px; border-radius:20px; font-weight:bold; font-size:14px;">현재 이 카카오톡 창은 닫아주세요 (X)</div></body></html>');
             document.close();
             window.stop(); 
         }
     </script>
-    
     <meta charset="UTF-8">
     <title>2학년 상점 톡톡(2026)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #F8F9FA; -webkit-tap-highlight-color: transparent; overscroll-behavior-y: contain; }
         .app-container { max-width: 480px; margin: 0 auto; background-color: #FDF8F2; min-height: 100vh; box-shadow: 0 0 15px rgba(0,0,0,0.05); position: relative; }
@@ -38,20 +28,15 @@
         .bottom-bar { position: fixed; bottom: 0; max-width: 480px; width: 100%; background: rgba(253, 248, 242, 0.95); backdrop-filter: blur(10px); padding: 15px 20px 25px 20px; border-top-left-radius: 24px; border-top-right-radius: 24px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); z-index: 40; display: flex; flex-direction: column; gap: 10px; }
         .submit-btn { background-color: #C4707A; color: white; border: none; border-radius: 14px; padding: 16px; font-size: 1.1rem; font-weight: 700; width: 100%; box-shadow: 0 4px 12px rgba(196,112,122,0.3); }
         .submit-btn:disabled { background-color: #EADDCD; box-shadow: none; color: #8C6F5E; }
-        
         .tab-btn { flex: 1; padding: 12px; text-align: center; font-weight: 700; color: #8C6F5E; border-bottom: 3px solid transparent; transition: 0.3s; }
         .tab-btn.active { color: #3D2B1F; border-bottom-color: #C4707A; }
-        
         .modal-overlay { background: rgba(61, 43, 31, 0.6); backdrop-filter: blur(3px); }
         .reason-btn { border: 1px solid #EADDCD; padding: 12px; border-radius: 10px; text-align: left; font-weight: 500; color: #5C4334; background: white; transition: 0.2s; }
         .reason-btn:active { background: #FDF8F2; transform: scale(0.98); }
-        
         #loading { position: fixed; inset: 0; background: #FDF8F2; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
         .spinner { width: 40px; height: 40px; border: 4px solid #EADDCD; border-top-color: #3D2B1F; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #3D2B1F; color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 9999; transition: opacity 0.3s; }
-        
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes slideDown { from { transform: translateY(0); } to { transform: translateY(100%); } }
         .modal-enter { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -78,10 +63,13 @@
         ];
 
         window.onload = function() {
-            // 구글 서버로 학생 데이터 요청 (CORS 대응)
             fetch(WEB_APP_URL + "?action=getStudentData")
-                .then(res => res.json())
+                .then(res => {
+                    if (!res.ok) throw new Error("네트워크 응답이 올바르지 않습니다.");
+                    return res.json();
+                })
                 .then(data => {
+                    if(data.error) throw new Error(data.error); // 시트 에러 발생 시 처리
                     classData = data;
                     const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
                     if(sortedClasses.length > 0) {
@@ -93,17 +81,25 @@
                 })
                 .catch(err => {
                     console.error(err);
-                    document.getElementById('loading').innerHTML = '<div class="text-center p-6 text-red-500 font-bold">⚠️ 시트 연동 오류 발생!<br><span class="text-xs font-normal text-gray-500">WEB_APP_URL 주소 입력을 확인해주세요.</span></div>';
+                    document.getElementById('loading').innerHTML = `
+                        <div class="text-center p-6 bg-white rounded-2xl mx-4 shadow-lg border border-red-200">
+                            <div class="text-3xl mb-2">⚠️</div>
+                            <div class="text-red-500 font-bold mb-2">데이터 연동 실패!</div>
+                            <div class="text-sm font-normal text-gray-600 text-left leading-relaxed">
+                                <b>해결 방법:</b><br>
+                                1. 구글 앱스 스크립트 '새 배포' 시 <b>[액세스 권한]</b>을 반드시 <b>'모든 사용자'</b>로 설정해주세요.<br>
+                                2. WEB_APP_URL 주소가 맞는지 확인해주세요.<br><br>
+                                (권한이 '나만'으로 되어있으면 구글이 데이터를 차단합니다)
+                            </div>
+                        </div>`;
                 });
         };
 
         function switchTab(tabName) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
-            
             document.getElementById(`tab-${tabName}`).classList.add('active');
             document.getElementById(`content-${tabName}`).classList.remove('hidden');
-
             if(tabName === 'stats') loadStats();
             if(tabName === 'history') loadMyHistory();
         }
@@ -131,22 +127,13 @@
                             </div>
                         `;
                     });
-                })
-                .catch(err => {
-                    console.error(err);
-                    list.innerHTML = '<div class="text-center py-10 text-red-400">통계를 불러오지 못했습니다.</div>';
-                });
+                }).catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">통계를 불러오지 못했습니다.</div>'; });
         }
 
         function loadMyHistory() {
             const list = document.getElementById('history-list');
             const teacherName = document.getElementById('teacherName').value.trim();
-            
-            if(!teacherName) {
-                list.innerHTML = '<div class="text-center py-10 text-gray-400">선생님 성함을 먼저 입력해주세요.</div>';
-                return;
-            }
-
+            if(!teacherName) { list.innerHTML = '<div class="text-center py-10 text-gray-400">선생님 성함을 먼저 입력해주세요.</div>'; return; }
             list.innerHTML = '<div class="text-center py-10"><div class="spinner mx-auto mb-3"></div>기록 조회 중...</div>';
             
             fetch(WEB_APP_URL + "?action=getTodayLogs&teacherName=" + encodeURIComponent(teacherName))
@@ -154,7 +141,6 @@
                 .then(history => {
                     list.innerHTML = '';
                     if(history.length === 0) { list.innerHTML = '<div class="text-center py-10 text-gray-400">오늘 선생님이 부여하신 기록이 없습니다.</div>'; return; }
-                    
                     history.forEach(h => {
                         list.innerHTML += `
                             <div class="bg-white p-3 rounded-xl border border-[#EADDCD] mb-2 relative">
@@ -163,50 +149,22 @@
                                     <span class="text-xs text-gray-400">${h.timestamp}</span>
                                 </div>
                                 <div class="text-sm text-gray-600 mb-2">${h.reason} (<span class="text-[#C4707A] font-bold">+${h.score}점</span>)</div>
-                                <button onclick="deleteLog(${h.rowId})" class="w-full py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold active:bg-gray-200">
-                                    🗑️ 기록 삭제
-                                </button>
+                                <button onclick="deleteLog(${h.rowId})" class="w-full py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-bold active:bg-gray-200">🗑️ 기록 삭제</button>
                             </div>
                         `;
                     });
-                })
-                .catch(err => {
-                    console.error(err);
-                    list.innerHTML = '<div class="text-center py-10 text-red-400">기록을 조회하지 못했습니다.</div>';
-                });
+                }).catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">기록을 조회하지 못했습니다.</div>'; });
         }
 
         function deleteLog(rowId) {
-            Swal.fire({
-                title: '기록을 삭제할까요?',
-                text: '삭제하면 복구할 수 없습니다.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#C4707A',
-                cancelButtonColor: '#8C6F5E',
-                confirmButtonText: '네, 삭제할게요',
-                cancelButtonText: '취소'
+            Swal.fire({ title: '기록을 삭제할까요?', text: '삭제하면 복구할 수 없습니다.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#C4707A', cancelButtonColor: '#8C6F5E', confirmButtonText: '네, 삭제할게요', cancelButtonText: '취소'
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire({ title: '삭제 중...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-                    
-                    // GAS 리다이렉트 대응용 content-type 우회 처리
-                    fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId })
-                    })
-                    .then(() => {
-                        setTimeout(() => {
-                            Swal.fire({ title: '삭제 완료!', text: '기록이 지워졌습니다.', icon: 'success', confirmButtonColor: '#3D2B1F' });
-                            loadMyHistory();
-                        }, 800);
-                    })
-                    .catch(err => {
-                        console.error(err);
-                        Swal.fire('오류', '삭제에 실패했습니다.', 'error');
-                    });
+                    fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId })
+                    }).then(() => {
+                        setTimeout(() => { Swal.fire({ title: '삭제 완료!', text: '기록이 지워졌습니다.', icon: 'success', confirmButtonColor: '#3D2B1F' }); loadMyHistory(); }, 800);
+                    }).catch(() => Swal.fire('오류', '삭제에 실패했습니다.', 'error'));
                 }
             });
         }
@@ -215,18 +173,11 @@
             const container = document.getElementById('classContainer');
             container.innerHTML = '';
             const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
-            
             sortedClasses.forEach(className => {
                 const btn = document.createElement('button');
                 btn.className = `px-5 py-2 rounded-full font-bold whitespace-nowrap transition-all border-2 ${currentClass === className ? 'bg-[#3D2B1F] text-white border-[#3D2B1F] shadow-md' : 'bg-white text-[#8C6F5E] border-[#EADDCD]'}`;
                 btn.innerText = className;
-                btn.onclick = () => {
-                    currentClass = className;
-                    clearSelection();
-                    renderClassButtons();
-                    renderStudentButtons();
-                    if(document.getElementById('tab-stats').classList.contains('active')) loadStats();
-                };
+                btn.onclick = () => { currentClass = className; clearSelection(); renderClassButtons(); renderStudentButtons(); if(document.getElementById('tab-stats').classList.contains('active')) loadStats(); };
                 container.appendChild(btn);
             });
         }
@@ -235,7 +186,6 @@
             const container = document.getElementById('studentContainer');
             container.innerHTML = '';
             if(!classData[currentClass]) return;
-
             classData[currentClass].forEach(student => {
                 const btn = document.createElement('button');
                 btn.className = 'student-btn';
@@ -246,13 +196,8 @@
         }
 
         function toggleStudent(name, btn) {
-            if(selectedStudents.has(name)) {
-                selectedStudents.delete(name);
-                btn.classList.remove('selected');
-            } else {
-                selectedStudents.add(name);
-                btn.classList.add('selected');
-            }
+            if(selectedStudents.has(name)) { selectedStudents.delete(name); btn.classList.remove('selected'); } 
+            else { selectedStudents.add(name); btn.classList.add('selected'); }
             updateSubmitButton();
         }
 
@@ -264,27 +209,16 @@
 
         function updateSubmitButton() {
             const btn = document.getElementById('submitBtn');
-            if(selectedStudents.size > 0) {
-                btn.innerText = `${selectedStudents.size}명에게 상점 부여하기 🎁`;
-                btn.disabled = false;
-            } else {
-                btn.innerText = "학생을 먼저 선택해주세요";
-                btn.disabled = true;
-            }
+            if(selectedStudents.size > 0) { btn.innerText = `${selectedStudents.size}명에게 상점 부여하기 🎁`; btn.disabled = false; } 
+            else { btn.innerText = "학생을 먼저 선택해주세요"; btn.disabled = true; }
         }
 
         function openMeritModal() {
             const teacherInput = document.getElementById('teacherName');
-            if(!teacherInput.value.trim()) {
-                showToast("앗! 선생님 성함을 먼저 입력해주세요 😅", true);
-                teacherInput.focus();
-                return;
-            }
-
+            if(!teacherInput.value.trim()) { showToast("앗! 선생님 성함을 먼저 입력해주세요 😅", true); teacherInput.focus(); return; }
             const modal = document.getElementById('meritModal');
             const content = document.getElementById('meritModalContent');
             const reasonContainer = document.getElementById('reasonContainer');
-            
             reasonContainer.innerHTML = '';
             reasons.forEach(r => {
                 const btn = document.createElement('button');
@@ -293,92 +227,51 @@
                 btn.onclick = () => confirmMerit(r.text, r.score);
                 reasonContainer.appendChild(btn);
             });
-
-            modal.classList.remove('hidden');
-            content.classList.remove('modal-leave-active');
-            content.classList.add('modal-enter');
+            modal.classList.remove('hidden'); content.classList.remove('modal-leave-active'); content.classList.add('modal-enter');
         }
 
         function closeMeritModal() {
-            const modal = document.getElementById('meritModal');
-            const content = document.getElementById('meritModalContent');
+            const modal = document.getElementById('meritModal'); const content = document.getElementById('meritModalContent');
             content.classList.add('modal-leave-active');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                content.classList.remove('modal-leave-active');
-                content.classList.add('modal-enter');
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); content.classList.remove('modal-leave-active'); content.classList.add('modal-enter'); }, 300);
         }
 
         function confirmMerit(reason, score) {
             const teacherName = document.getElementById('teacherName').value.trim();
             pendingMeritData = { reason, score, teacher: teacherName };
-            
             closeMeritModal();
-
-            const confirmModal = document.getElementById('confirmModal');
-            const confirmContent = document.getElementById('confirmModalContent');
+            const confirmModal = document.getElementById('confirmModal'); const confirmContent = document.getElementById('confirmModalContent');
             const names = Array.from(selectedStudents).join(', ');
-            
             document.getElementById('confirmDetails').innerHTML = `
                 <div class="text-[#8C6F5E] mb-2 text-sm">부여 대상</div>
                 <div class="font-bold text-[#3D2B1F] mb-4">${currentClass} <span class="text-[#C4707A]">${selectedStudents.size}명</span><br><span class="text-sm font-normal">${names}</span></div>
                 <div class="text-[#8C6F5E] mb-2 text-sm">부여 사유</div>
-                <div class="font-bold text-[#3D2B1F] mb-4">${reason} (+${score}점)</div>
-            `;
-
-            confirmModal.classList.remove('hidden');
-            confirmContent.classList.remove('modal-leave-active');
-            confirmContent.classList.add('modal-enter');
+                <div class="font-bold text-[#3D2B1F] mb-4">${reason} (+${score}점)</div>`;
+            confirmModal.classList.remove('hidden'); confirmContent.classList.remove('modal-leave-active'); confirmContent.classList.add('modal-enter');
         }
 
         function closeConfirmModal() {
-            const modal = document.getElementById('confirmModal');
-            const content = document.getElementById('confirmModalContent');
+            const modal = document.getElementById('confirmModal'); const content = document.getElementById('confirmModalContent');
             content.classList.add('modal-leave-active');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                content.classList.remove('modal-leave-active');
-                content.classList.add('modal-enter');
-                pendingMeritData = null;
-            }, 150);
+            setTimeout(() => { modal.classList.add('hidden'); content.classList.remove('modal-leave-active'); content.classList.add('modal-enter'); pendingMeritData = null; }, 150);
         }
 
         function executeGiveMerit() {
             if(!pendingMeritData) return;
             const { reason, score, teacher } = pendingMeritData;
             closeConfirmModal();
-
             localStorage.setItem("teacherName", teacher);
-            const logs = Array.from(selectedStudents).map(name => ({
-                classNum: currentClass.replace('반', ''), name: name, reason: reason, score: score, teacher: teacher
-            }));
-
+            const logs = Array.from(selectedStudents).map(name => ({ classNum: currentClass.replace('반', ''), name: name, reason: reason, score: score, teacher: teacher }));
             showToast("데이터 전송 중... 🚀");
-            
-            // GAS POST 보안 정책 돌파용 샌드박싱 전송 방식
-            fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'text/plain' },
-                body: JSON.stringify({ action: 'doPostData', logs: logs })
-            })
-            .then(() => {
-                showToast(`${selectedStudents.size}명에게 상점 부여!`);
-                clearSelection();
-            })
-            .catch(err => {
-                console.error(err);
-                showToast("오류 발생: 다시 시도해주세요", true);
-            });
+            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'doPostData', logs: logs }) })
+            .then(() => { showToast(`${selectedStudents.size}명에게 상점 부여!`); clearSelection(); })
+            .catch(() => showToast("오류 발생: 다시 시도해주세요", true));
         }
 
         function showToast(msg, isError = false) {
             const toast = document.getElementById('toast');
-            toast.textContent = msg;
-            toast.style.backgroundColor = isError ? "#C4707A" : "#3D2B1F";
-            toast.classList.remove('hidden');
-            setTimeout(() => toast.classList.add('hidden'), 2500);
+            toast.textContent = msg; toast.style.backgroundColor = isError ? "#C4707A" : "#3D2B1F";
+            toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2500);
         }
 
         const savedTeacher = localStorage.getItem("teacherName");
@@ -392,7 +285,6 @@
         <div class="header">
             <h1 class="text-2xl font-black mb-1 flex items-center gap-2">🚀 2학년 상점 톡톡</h1>
             <p class="text-sm opacity-80">터치 몇 번으로 끝내는 초간단 상점 부여</p>
-            
             <div class="mt-4 bg-white/20 p-3 rounded-xl backdrop-blur-sm">
                 <input type="text" id="teacherName" placeholder="👨‍🏫 선생님 성함을 입력하세요" class="w-full bg-transparent text-white placeholder-white/70 outline-none font-bold text-center text-lg">
             </div>
