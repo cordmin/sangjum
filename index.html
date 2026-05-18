@@ -294,10 +294,14 @@
                 customClass: { popup: 'rounded-2xl' }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    showToast("삭제 처리 중...");
-                    fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId }) })
-                    .then(() => { setTimeout(() => { Swal.fire({ title: '삭제 완료!', text: '기록이 깔끔하게 지워졌습니다.', icon: 'success', confirmButtonColor: '#C4704A' }); loadHistory(); }, 800); })
-                    .catch(() => Swal.fire('오류', '삭제에 실패했습니다.', 'error'));
+                    // 🚀 [수정됨] "삭제 처리 중..."을 띄우지 않고 바로 삭제 완료 팝업을 띄웁니다!
+                    Swal.fire({ title: '삭제 완료!', text: '기록이 깔끔하게 지워졌습니다.', icon: 'success', confirmButtonColor: '#C4704A' }); 
+                    
+                    // 구글 서버에 삭제 명령 던지기 (뒤에서 몰래 일함)
+                    fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId }) });
+
+                    // 목록 갱신은 구글 서버가 지울 시간을 0.5초 정도 주고 호출해야 꼬이지 않습니다.
+                    setTimeout(() => { loadHistory(); }, 500);
                 }
             });
         }
@@ -354,19 +358,16 @@
                 classNum: currentClass.replace('반', ''), name: name, reason: finalReason, score: finalScore, teacher: teacher
             }));
 
-            // 🌟 수정완료: 완벽 복구된 누구에게 부여했는지 알리는 동적 멘트 조합 로직
             const firstStudent = Array.from(selectedStudents)[0];
             const multiIndicator = selectedStudents.size > 1 ? ` 외 ${selectedStudents.size - 1}명` : '';
             const nameDisplay = `${firstStudent}${multiIndicator}`;
 
-            showToast("데이터 전송 중... 🚀");
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'doPostData', logs: logs }) })
-            .then(() => { 
-                // 🌟 수정완료: 부실함 없이 정확한 타겟 이름을 포함한 상점 완료 메시지 출력
-                showToast(`✨ ${nameDisplay} 상점 부여 완료!`); 
-                clearSelection(); 
-            })
-            .catch(() => showToast("오류 발생: 다시 시도해주세요", true));
+            // 🚀 [수정됨] "전송 중..." 단계를 아예 없애고, 버튼 누르자마자 0초 만에 "부여 완료!"를 띄워버립니다.
+            showToast(`✨ ${nameDisplay} 상점 부여 완료!`); 
+            clearSelection(); 
+
+            // 구글 서버에는 백그라운드로 몰래 던져놓기만 하고 응답은 안 기다립니다. (no-cors의 장점)
+            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'doPostData', logs: logs }) });
         }
 
         function showToast(msg, isError = false) {
