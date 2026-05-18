@@ -2,16 +2,26 @@
 <html lang="ko">
 <head>
     <script>
-        var targetUrl = location.href; 
         var userAgent = navigator.userAgent.toLowerCase();
         if (userAgent.indexOf("kakaotalk") > -1) {
-            location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
+            var targetUrl = location.href;
+            var isAndroid = userAgent.indexOf('android') > -1;
+            
+            if (isAndroid) {
+                // 🤖 안드로이드: 크롬 브라우저로 강제 이동 (Intent 방식)
+                location.href = 'intent://' + location.href.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
+            } else {
+                // 🍎 iOS(아이폰) 및 기타: 사파리 등 기본 브라우저로 강제 이동
+                location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
+            }
+
+            // 만약 카카오톡이 끝내 안 보내줄 경우를 대비한 가장 확실한 수동 안내문
             document.write(
                 '<!DOCTYPE html><html lang="ko"><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>' +
-                '<body style="margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#FDF8F2; font-family:\'Noto Sans KR\', sans-serif; text-align:center;">' +
-                '<div style="font-size:50px; margin-bottom:16px;">🚀</div>' +
-                '<h2 style="color:#3D2B1F; font-size:22px; font-weight:900; margin:0 0 12px 0;">기본 브라우저로 이동했습니다!</h2>' +
-                '<p style="color:#6B5247; font-size:16px; margin:0 0 30px 0; line-height:1.6;">더 쾌적한 사용을 위해<br>크롬이나 사파리 등 새로 열린 창을 이용해주세요.</p>' +
+                '<body style="margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#FDF8F2; font-family:\'Noto Sans KR\', sans-serif; text-align:center; padding: 20px;">' +
+                '<div style="font-size:50px; margin-bottom:16px;">🚧</div>' +
+                '<h2 style="color:#3D2B1F; font-size:22px; font-weight:900; margin:0 0 12px 0;">카카오톡에서는 상점 부여가 제한됩니다!</h2>' +
+                '<p style="color:#6B5247; font-size:16px; margin:0 0 30px 0; line-height:1.6; word-break:keep-all;">안전한 데이터 전송을 위해 기본 브라우저를 이용해주세요.<br><br>👉 화면 우측 하단(또는 상단)의 <b>[ ⋮ ] 또는 [ ⋯ ] 메뉴</b>를 누른 후<br><b style="color:#C4704A;">[다른 브라우저로 열기]</b>를 선택해주세요!</p>' +
                 '<div style="background-color:#F5DDD2; color:#C4704A; padding:12px 24px; border-radius:20px; font-weight:bold; font-size:14px;">현재 이 카카오톡 창은 닫아주세요 (X)</div>' +
                 '</body></html>'
             );
@@ -22,8 +32,8 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>2학년 상점 톡톡(2026)</title>
     
+    <title>2학년 상점 톡톡(2026)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
@@ -44,16 +54,6 @@
         .modal-leave-active { opacity: 0; transform: scale(0.9); transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
         
         .tab-btn.active { color: #C4704A; border-top: 3px solid #C4704A; background-color: #FDF8F2; }
-
-        /* 선생님 이름 플라잉 애니메이션용 CSS */
-        @keyframes wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
-        .fly-away {
-            top: 40px !important; 
-            left: calc(100% - 70px) !important; 
-            transform: translate(-50%, -50%) scale(0.05) !important;
-            opacity: 0 !important;
-        }
-        .highlight-input { border-color: #C4704A !important; background-color: #FDF8F2 !important; transform: scale(1.1); color: #C4704A !important; }
     </style>
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden relative">
@@ -63,18 +63,9 @@
         <div class="text-[#6B5247] font-bold">학생 명단 동기화 중...</div>
     </div>
 
-    <div class="fixed inset-0 bg-[#3D2B1F]/60 backdrop-blur-sm z-[100] flex items-center justify-center transition-opacity duration-500" id="nameOverlay" style="display: none;"></div>
-    <div class="fixed bg-white w-[85%] max-w-sm p-6 rounded-3xl shadow-2xl text-center z-[110] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]" id="nameModal" style="display: none; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1;">
-        <div class="text-[45px] mb-2 inline-block origin-bottom animate-[wave_2s_infinite]">👋</div>
-        <h3 class="text-xl font-black text-[#3D2B1F] mb-2">환영합니다 선생님!</h3>
-        <p class="text-[13px] text-[#6B5247] mb-5 leading-relaxed break-keep">원활한 상점 부여를 위해<br><b>선생님 성함</b>을 먼저 입력해주세요.<br>(한 번만 입력하면 자동으로 기억합니다)</p>
-        <input type="text" id="firstTeacherInput" class="w-full p-3 border-2 border-[#EADDCD] rounded-xl text-center font-bold text-[#3D2B1F] mb-4 outline-none focus:border-[#C4704A] bg-[#FDF8F2] focus:bg-white transition-colors" placeholder="예: 홍길동">
-        <button onclick="saveFirstTeacherName()" class="w-full p-3.5 bg-[#C4704A] text-white rounded-xl font-bold text-base shadow-[0_4px_10px_rgba(196,112,74,0.3)] active:scale-95 transition-transform">시작하기 🚀</button>
-    </div>
-
     <header class="px-6 py-4 bg-white border-b border-[#E5E7EB] shadow-sm z-20 flex justify-between items-center shrink-0">
         <h1 class="text-xl font-black text-[#C4704A]">✨ 2학년 상점 톡톡</h1>
-        <input type="text" id="teacherName" placeholder="선생님 성함 입력" class="w-28 p-2 bg-[#F5EFE6] rounded-lg text-center text-[13px] font-bold text-[#6B5247] outline-none border-2 border-transparent transition-all duration-300">
+        <input type="text" id="teacherName" placeholder="선생님 성함 입력" class="w-32 p-2 bg-[#F5EFE6] rounded-lg text-center text-sm font-bold text-[#6B5247] outline-none focus:ring-2 ring-[#C4704A]">
     </header>
 
     <div id="classTabContainer" class="bg-white border-b border-[#E5E7EB] shrink-0 z-10">
@@ -98,7 +89,7 @@
 
         <section id="view-history" class="hidden">
             <h2 class="text-lg font-black mb-1 text-[#C4704A]">오늘 상점 기록</h2>
-            <p class="text-xs font-bold text-[#9C8880] mb-4">※ 선생님 성함과 일치하는 오늘 기록만 보입니다.</p>
+            <p class="text-xs font-bold text-[#9C8880] mb-4">※ 선생님께서 오늘 기록한 내역만 수정가능합니다.</p>
             <div id="historyList" class="flex flex-col gap-3"></div>
         </section>
 
@@ -110,7 +101,7 @@
                 <button onclick="openConfirmModal('환경미화', 1)" class="action-chip flex-1 justify-center bg-[#6B8F71] text-white py-2.5 rounded-xl font-bold flex items-center shadow-sm text-[12px] sm:text-sm">환경미화</button>
                 <button onclick="openConfirmModal('학습태도', 1)" class="action-chip flex-1 justify-center bg-[#5B8FB9] text-white py-2.5 rounded-xl font-bold flex items-center shadow-sm text-[12px] sm:text-sm">학습태도</button>
                 <button onclick="openConfirmModal('신고정신', 1)" class="action-chip flex-1 justify-center bg-[#E8956C] text-white py-2.5 rounded-xl font-bold flex items-center shadow-sm text-[12px] sm:text-sm">신고정신</button>
-                <button onclick="openConfirmModal('선행모범', 2)" class="action-chip flex-1 justify-center bg-[#A884C4] text-white py-2.5 rounded-xl font-bold flex items-center shadow-sm text-[12px] sm:text-sm">선행모범</button>
+                <button onclick="openConfirmModal('선행모범', 1)" class="action-chip flex-1 justify-center bg-[#A884C4] text-white py-2.5 rounded-xl font-bold flex items-center shadow-sm text-[12px] sm:text-sm">선행모범</button>
             </div>
         </div>
     </footer>
@@ -134,14 +125,17 @@
                 <span class="text-2xl">🎁</span>
                 <h3 class="text-lg font-black text-[#3D2B1F]">상점 부여 확인</h3>
             </div>
+            
             <div class="bg-[#FDF8F2] rounded-xl p-4 text-[#6B5247] text-[15px] leading-relaxed">
-                <p id="modalMessage" class="mb-4 text-center break-keep"></p>
+                <p id="modalMessage" class="mb-4 text-center"></p>
+                
                 <div class="flex justify-center items-center gap-4 bg-white p-2 rounded-xl border border-[#EADDCD] mx-auto w-fit shadow-sm">
                     <button onclick="changeMeritCount(-1)" class="w-12 h-10 flex items-center justify-center bg-[#F5EFE6] text-[#6B5247] rounded-lg font-black text-xl active:scale-90 transition-transform">➖</button>
                     <span id="meritCountDisplay" class="font-black text-xl text-[#C4704A] w-14 text-center">1개</span>
                     <button onclick="changeMeritCount(1)" class="w-12 h-10 flex items-center justify-center bg-[#F5EFE6] text-[#6B5247] rounded-lg font-black text-xl active:scale-90 transition-transform">➕</button>
                 </div>
             </div>
+
             <div class="flex gap-2 mt-2">
                 <button onclick="closeConfirmModal()" class="flex-1 py-3 rounded-xl font-bold bg-[#F5EFE6] text-[#6B5247] hover:bg-[#EBE2D5] transition-colors">취소</button>
                 <button onclick="executeGiveMerit()" class="flex-1 py-3 rounded-xl font-bold bg-[#C4704A] text-white hover:bg-[#B36039] transition-colors shadow-sm">확인</button>
@@ -154,7 +148,6 @@
     </div>
 
     <script>
-        // ⚠️ [필수 확인]: 선생님의 '구글 웹앱 배포 주소(exec)'를 여기에 반드시 붙여넣으세요!
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzZPqYRPvoLo_NIjCaqYuWDVI8cU6NYt6Wbqr5z5GNUIaUkX2GQ_vkOoSngeW-sJ8xs/exec";
 
         let classData = {};
@@ -163,54 +156,23 @@
         let pendingMeritData = null;
         let currentMeritCount = 1;
 
-        // 학생 명단 초기 동기화
-        window.onload = function() {
-            const savedTeacher = localStorage.getItem("teacherName");
-            if(savedTeacher) {
-                document.getElementById('teacherName').value = savedTeacher;
-            } else {
-                document.getElementById('nameOverlay').style.display = 'flex';
-                document.getElementById('nameModal').style.display = 'block';
-            }
-
-            fetch(WEB_APP_URL + "?action=getStudentData")
-                .then(res => res.json())
-                .then(data => {
-                    classData = data;
-                    const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
-                    if(sortedClasses.length > 0) {
-                        currentClass = sortedClasses[0];
-                        renderTabs();
-                        renderStudents(currentClass);
-                    }
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                })
-                .catch(error => {
-                    alert("데이터를 불러오는데 실패했습니다: " + error.message);
-                    document.getElementById('loadingOverlay').innerHTML = `<div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-red-200"><div class="text-3xl mb-2">⚠️</div><div class="text-red-500 font-bold mb-2">데이터 연동 실패!</div><div class="text-sm font-normal text-gray-600">앱스스크립트 URL과 권한을 확인해주세요.</div></div>`;
-                });
-        };
-
-        // 첫 방문 모달 플라잉 애니메이션 함수
-        function saveFirstTeacherName() {
-            const name = document.getElementById('firstTeacherInput').value.trim() || '선생님';
-            const modal = document.getElementById('nameModal');
-            const overlay = document.getElementById('nameOverlay');
-            const targetInput = document.getElementById('teacherName');
-
-            overlay.style.opacity = '0';
-            modal.classList.add('fly-away');
-
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                modal.style.display = 'none';
-                targetInput.value = name;
-                localStorage.setItem("teacherName", name);
-                
-                targetInput.classList.add('highlight-input');
-                setTimeout(() => targetInput.classList.remove('highlight-input'), 800);
-            }, 600);
-        }
+        // 학생 명단 초기 동기화 (fetch 방식)
+        fetch(WEB_APP_URL + "?action=getStudentData")
+            .then(res => res.json())
+            .then(data => {
+                classData = data;
+                const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
+                if(sortedClasses.length > 0) {
+                    currentClass = sortedClasses[0];
+                    renderTabs();
+                    renderStudents(currentClass);
+                }
+                document.getElementById('loadingOverlay').style.display = 'none';
+            })
+            .catch(error => {
+                alert("데이터를 불러오는데 실패했습니다: " + error.message);
+                document.getElementById('loadingOverlay').innerHTML = `<div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-red-200"><div class="text-3xl mb-2">⚠️</div><div class="text-red-500 font-bold mb-2">데이터 연동 실패!</div><div class="text-sm font-normal text-gray-600">앱스스크립트 URL과 권한을 확인해주세요.</div></div>`;
+            });
 
         // 뷰 전환 로직
         function switchView(view) {
@@ -251,12 +213,8 @@
                     currentClass = cls;
                     selectedStudents.clear();
                     renderTabs();
-                    
-                    if(!document.getElementById('view-give').classList.contains('hidden')) {
-                        renderStudents(cls);
-                    } else if (!document.getElementById('view-stats').classList.contains('hidden')) {
-                        loadStats();
-                    }
+                    if(!document.getElementById('view-give').classList.contains('hidden')) renderStudents(cls);
+                    else if (!document.getElementById('view-stats').classList.contains('hidden')) loadStats();
                 };
                 tabsDiv.appendChild(btn);
             });
@@ -274,13 +232,8 @@
                 card.className = `student-card bg-white rounded-xl p-2 flex flex-col items-center justify-center h-16 shadow-sm ${isSelected ? 'selected' : ''}`;
                 card.innerHTML = `<span class="text-[13px] text-[#9C8880] font-bold">${student.num}번</span><span class="text-[16px] font-black text-[#3D2B1F] leading-tight mt-0.5">${student.name}</span>`;
                 card.onclick = () => {
-                    if(selectedStudents.has(student.name)) {
-                        selectedStudents.delete(student.name);
-                        card.classList.remove('selected');
-                    } else {
-                        selectedStudents.add(student.name);
-                        card.classList.add('selected');
-                    }
+                    if(selectedStudents.has(student.name)) { selectedStudents.delete(student.name); card.classList.remove('selected'); } 
+                    else { selectedStudents.add(student.name); card.classList.add('selected'); }
                 };
                 grid.appendChild(card);
             });
@@ -290,7 +243,6 @@
         function loadStats() {
             document.getElementById('statsTitle').textContent = `${currentClass} 누적 순위`;
             const list = document.getElementById('statsList');
-
             list.innerHTML = '<div class="text-center py-10 font-bold text-gray-500">데이터를 분석 중입니다...</div>';
             
             fetch(WEB_APP_URL + "?action=getStatsData")
@@ -299,7 +251,6 @@
                     list.innerHTML = '';
                     const filtered = stats.filter(s => s.classNum == currentClass.replace('반','')).sort((a,b)=>b.total-a.total);
                     if(filtered.length === 0) { list.innerHTML = '<div class="text-center py-10 text-gray-400">부여된 상점이 없습니다.</div>'; return; }
-                    
                     filtered.forEach((s, idx) => {
                         const item = document.createElement('div');
                         item.className = 'bg-white p-4 rounded-xl flex justify-between items-center shadow-sm';
@@ -307,20 +258,14 @@
                                           <div class="font-black text-lg text-[#3D2B1F]">${s.total}점</div>`;
                         list.appendChild(item);
                     });
-                })
-                .catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">통계를 불러오지 못했습니다.</div>'; });
+                }).catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">통계를 불러오지 못했습니다.</div>'; });
         }
 
         // 최근 기록 로드
         function loadHistory() {
             const list = document.getElementById('historyList');
             const teacher = document.getElementById('teacherName').value.trim();
-
-            if(!teacher) {
-                list.innerHTML = '<div class="text-center py-10 font-bold text-red-500">화면 상단에 선생님 성함을 먼저 입력해주세요!</div>';
-                return;
-            }
-
+            if(!teacher) { list.innerHTML = '<div class="text-center py-10 font-bold text-red-500">화면 상단에 선생님 성함을 먼저 입력해주세요!</div>'; return; }
             list.innerHTML = '<div class="text-center py-10 font-bold text-gray-500">기록을 불러오는 중입니다...</div>';
             
             fetch(WEB_APP_URL + "?action=getTodayLogs&teacherName=" + encodeURIComponent(teacher))
@@ -328,7 +273,6 @@
                 .then(history => {
                     list.innerHTML = '';
                     if(history.length === 0) { list.innerHTML = '<div class="text-center py-10 text-gray-400">오늘 선생님이 부여하신 기록이 없습니다.</div>'; return; }
-                    
                     history.forEach(h => {
                         const item = document.createElement('div');
                         item.className = 'bg-white p-4 rounded-xl shadow-sm border-l-4 border-[#C4704A] flex justify-between items-center';
@@ -339,37 +283,20 @@
                         <button onclick="deleteLog('${h.rowId}')" class="bg-red-50 text-red-500 px-4 py-2 rounded-lg font-bold text-sm shrink-0">삭제</button>`;
                         list.appendChild(item);
                     });
-                })
-                .catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">기록을 조회하지 못했습니다.</div>'; });
+                }).catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">기록을 조회하지 못했습니다.</div>'; });
         }
 
-        // 삭제 로직
+        // 기록 삭제
         function deleteLog(rowId) {
             Swal.fire({
-                title: '<span style="font-size: 20px;">기록을 삭제하시겠어요?</span>',
-                text: "오늘 기록하신 내역만 지워집니다.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#C4704A',
-                cancelButtonColor: '#F5EFE6',
-                confirmButtonText: '삭제하기',
-                cancelButtonText: '<span style="color:#6B5247; font-weight:bold;">취소</span>',
+                title: '<span style="font-size: 20px;">기록을 삭제하시겠어요?</span>', text: "오늘 기록하신 내역만 지워집니다.", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#C4704A', cancelButtonColor: '#F5EFE6', confirmButtonText: '삭제하기', cancelButtonText: '<span style="color:#6B5247; font-weight:bold;">취소</span>',
                 customClass: { popup: 'rounded-2xl' }
             }).then((result) => {
                 if (result.isConfirmed) {
                     showToast("삭제 처리 중...");
-                    fetch(WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'text/plain' },
-                        body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId })
-                    })
-                    .then(() => {
-                        setTimeout(() => {
-                            Swal.fire({ title: '삭제 완료!', text: '기록이 깔끔하게 지워졌습니다.', icon: 'success', confirmButtonColor: '#C4704A' });
-                            loadHistory(); 
-                        }, 800);
-                    })
+                    fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId }) })
+                    .then(() => { setTimeout(() => { Swal.fire({ title: '삭제 완료!', text: '기록이 깔끔하게 지워졌습니다.', icon: 'success', confirmButtonColor: '#C4704A' }); loadHistory(); }, 800); })
                     .catch(() => Swal.fire('오류', '삭제에 실패했습니다.', 'error'));
                 }
             });
@@ -377,9 +304,11 @@
 
         function clearSelection() { selectedStudents.clear(); renderStudents(currentClass); }
 
+        // 상점 개수 조절 함수
         function changeMeritCount(delta) {
             currentMeritCount += delta;
             if (currentMeritCount < 1) currentMeritCount = 1;
+            
             document.getElementById('meritCountDisplay').textContent = currentMeritCount + '개';
             document.getElementById('dynamicCountText').textContent = currentMeritCount + '개';
         }
@@ -402,23 +331,13 @@
             const modal = document.getElementById('customModal');
             const content = document.getElementById('modalContent');
             modal.classList.remove('hidden');
-            setTimeout(() => {
-                content.classList.remove('modal-enter');
-                content.classList.add('modal-enter-active');
-            }, 10);
+            setTimeout(() => { content.classList.remove('modal-enter'); content.classList.add('modal-enter-active'); }, 10);
         }
 
         function closeConfirmModal() {
-            const modal = document.getElementById('customModal');
-            const content = document.getElementById('modalContent');
-            content.classList.remove('modal-enter-active');
-            content.classList.add('modal-leave-active');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                content.classList.remove('modal-leave-active');
-                content.classList.add('modal-enter');
-                pendingMeritData = null;
-            }, 150);
+            const modal = document.getElementById('customModal'); const content = document.getElementById('modalContent');
+            content.classList.remove('modal-enter-active'); content.classList.add('modal-leave-active');
+            setTimeout(() => { modal.classList.add('hidden'); content.classList.remove('modal-leave-active'); content.classList.add('modal-enter'); pendingMeritData = null; }, 150);
         }
 
         function executeGiveMerit() {
@@ -435,7 +354,7 @@
                 classNum: currentClass.replace('반', ''), name: name, reason: finalReason, score: finalScore, teacher: teacher
             }));
 
-            // 🌟 수정완료: 정확한 대상 표기법 멘트 계산 로직 복구
+            // 🌟 수정완료: 완벽 복구된 누구에게 부여했는지 알리는 동적 멘트 조합 로직
             const firstStudent = Array.from(selectedStudents)[0];
             const multiIndicator = selectedStudents.size > 1 ? ` 외 ${selectedStudents.size - 1}명` : '';
             const nameDisplay = `${firstStudent}${multiIndicator}`;
@@ -443,7 +362,7 @@
             showToast("데이터 전송 중... 🚀");
             fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'doPostData', logs: logs }) })
             .then(() => { 
-                // 🌟 수정완료: 부실함 없는 명확한 멘트 처리 완료
+                // 🌟 수정완료: 부실함 없이 정확한 타겟 이름을 포함한 상점 완료 메시지 출력
                 showToast(`✨ ${nameDisplay} 상점 부여 완료!`); 
                 clearSelection(); 
             })
@@ -455,6 +374,9 @@
             toast.textContent = msg; toast.style.backgroundColor = isError ? "#C4707A" : "#3D2B1F";
             toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2500);
         }
+
+        const savedTeacher = localStorage.getItem("teacherName");
+        if(savedTeacher) document.getElementById('teacherName').value = savedTeacher;
     </script>
 </body>
 </html>
