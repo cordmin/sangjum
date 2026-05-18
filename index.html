@@ -5,14 +5,11 @@
         var userAgent = navigator.userAgent.toLowerCase();
         if (userAgent.indexOf("kakaotalk") > -1) {
             var targetUrl = location.href;
-            var isAndroid = userAgent.indexOf('android') > -1;
             
-            if (isAndroid) {
-                location.href = 'intent://' + location.href.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
-            } else {
-                location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
-            }
+            // 🌟 안드로이드, 아이폰 구분 없이 스마트폰에 설정된 '기본 브라우저(삼성인터넷, 크롬 등)'로 튕겨내는 만능 코드!
+            location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
 
+            // 만약 카카오톡이 끝내 안 보내줄 경우를 대비한 수동 안내문
             document.write(
                 '<!DOCTYPE html><html lang="ko"><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>' +
                 '<body style="margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#FDF8F2; font-family:\'Noto Sans KR\', sans-serif; text-align:center; padding: 20px;">' +
