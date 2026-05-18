@@ -8,14 +8,11 @@
             var isAndroid = userAgent.indexOf('android') > -1;
             
             if (isAndroid) {
-                // 🤖 안드로이드: 크롬 브라우저로 강제 이동 (Intent 방식)
                 location.href = 'intent://' + location.href.replace(/https?:\/\//i, '') + '#Intent;scheme=https;package=com.android.chrome;end';
             } else {
-                // 🍎 iOS(아이폰) 및 기타: 사파리 등 기본 브라우저로 강제 이동
                 location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(targetUrl);
             }
 
-            // 만약 카카오톡이 끝내 안 보내줄 경우를 대비한 가장 확실한 수동 안내문
             document.write(
                 '<!DOCTYPE html><html lang="ko"><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>' +
                 '<body style="margin:0; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; background-color:#FDF8F2; font-family:\'Noto Sans KR\', sans-serif; text-align:center; padding: 20px;">' +
@@ -54,6 +51,16 @@
         .modal-leave-active { opacity: 0; transform: scale(0.9); transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); }
         
         .tab-btn.active { color: #C4704A; border-top: 3px solid #C4704A; background-color: #FDF8F2; }
+
+        /* 🌟 복구됨: 선생님 이름 플라잉 애니메이션용 CSS */
+        @keyframes wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-15deg); } 75% { transform: rotate(15deg); } }
+        .fly-away {
+            top: 40px !important; 
+            left: calc(100% - 70px) !important; 
+            transform: translate(-50%, -50%) scale(0.05) !important;
+            opacity: 0 !important;
+        }
+        .highlight-input { border-color: #C4704A !important; background-color: #FDF8F2 !important; transform: scale(1.1); color: #C4704A !important; }
     </style>
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden relative">
@@ -63,16 +70,25 @@
         <div class="text-[#6B5247] font-bold">학생 명단 동기화 중...</div>
     </div>
 
+    <div class="fixed inset-0 bg-[#3D2B1F]/60 backdrop-blur-sm z-[100] flex items-center justify-center transition-opacity duration-500" id="nameOverlay" style="display: none;"></div>
+    <div class="fixed bg-white w-[85%] max-w-sm p-6 rounded-3xl shadow-2xl text-center z-[110] transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]" id="nameModal" style="display: none; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(1); opacity: 1;">
+        <div class="text-[45px] mb-2 inline-block origin-bottom animate-[wave_2s_infinite]">👋</div>
+        <h3 class="text-xl font-black text-[#3D2B1F] mb-2">환영합니다 선생님!</h3>
+        <p class="text-[13px] text-[#6B5247] mb-5 leading-relaxed break-keep">원활한 상점 부여를 위해<br><b>선생님 성함</b>을 먼저 입력해주세요.<br>(한 번만 입력하면 자동으로 기억합니다)</p>
+        <input type="text" id="firstTeacherInput" class="w-full p-3 border-2 border-[#EADDCD] rounded-xl text-center font-bold text-[#3D2B1F] mb-4 outline-none focus:border-[#C4704A] bg-[#FDF8F2] focus:bg-white transition-colors" placeholder="예: 홍길동">
+        <button onclick="saveFirstTeacherName()" class="w-full p-3.5 bg-[#C4704A] text-white rounded-xl font-bold text-base shadow-[0_4px_10px_rgba(196,112,74,0.3)] active:scale-95 transition-transform">시작하기 🚀</button>
+    </div>
+
     <header class="px-6 py-4 bg-white border-b border-[#E5E7EB] shadow-sm z-20 flex justify-between items-center shrink-0">
         <h1 class="text-xl font-black text-[#C4704A]">✨ 2학년 상점 톡톡</h1>
-        <input type="text" id="teacherName" placeholder="선생님 성함 입력" class="w-32 p-2 bg-[#F5EFE6] rounded-lg text-center text-sm font-bold text-[#6B5247] outline-none focus:ring-2 ring-[#C4704A]">
+        <input type="text" id="teacherName" placeholder="선생님 성함 입력" class="w-32 p-2 bg-[#F5EFE6] rounded-lg text-center text-sm font-bold text-[#6B5247] outline-none transition-all duration-300">
     </header>
 
     <div id="classTabContainer" class="bg-white border-b border-[#E5E7EB] shrink-0 z-10">
         <div class="flex overflow-x-auto p-3 gap-2 no-scrollbar" id="classTabs"></div>
     </div>
 
-    <main class="flex-1 overflow-y-auto p-6 bg-[#FDF8F2] relative pb-[224px]">
+    <main class="flex-1 overflow-y-auto p-6 bg-[#FDF8F2] relative pb-[180px]">
         
         <section id="view-give">
             <div class="flex justify-between items-end mb-3">
@@ -156,25 +172,55 @@
         let pendingMeritData = null;
         let currentMeritCount = 1;
 
-        // 학생 명단 초기 동기화 (fetch 방식)
-        fetch(WEB_APP_URL + "?action=getStudentData")
-            .then(res => res.json())
-            .then(data => {
-                classData = data;
-                const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
-                if(sortedClasses.length > 0) {
-                    currentClass = sortedClasses[0];
-                    renderTabs();
-                    renderStudents(currentClass);
-                }
-                document.getElementById('loadingOverlay').style.display = 'none';
-            })
-            .catch(error => {
-                alert("데이터를 불러오는데 실패했습니다: " + error.message);
-                document.getElementById('loadingOverlay').innerHTML = `<div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-red-200"><div class="text-3xl mb-2">⚠️</div><div class="text-red-500 font-bold mb-2">데이터 연동 실패!</div><div class="text-sm font-normal text-gray-600">앱스스크립트 URL과 권한을 확인해주세요.</div></div>`;
-            });
+        window.onload = function() {
+            // 🚀 가장 먼저 출발 (동기화 속도 최적화 유지)
+            fetch(WEB_APP_URL + "?action=getStudentData")
+                .then(res => res.json())
+                .then(data => {
+                    classData = data;
+                    const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
+                    if(sortedClasses.length > 0) {
+                        currentClass = sortedClasses[0];
+                        renderTabs();
+                        renderStudents(currentClass);
+                    }
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                })
+                .catch(error => {
+                    document.getElementById('loadingOverlay').innerHTML = `<div class="text-center p-6 bg-white rounded-2xl shadow-lg border border-red-200"><div class="text-3xl mb-2">⚠️</div><div class="text-red-500 font-bold mb-2">데이터 연동 실패!</div><div class="text-sm font-normal text-gray-600">앱스스크립트 URL과 권한을 확인해주세요.</div></div>`;
+                });
 
-        // 뷰 전환 로직
+            // 👤 서버가 일하는 동안 모달 애니메이션 준비 (동시 진행)
+            const savedTeacher = localStorage.getItem("teacherName");
+            if(savedTeacher) {
+                document.getElementById('teacherName').value = savedTeacher;
+            } else {
+                document.getElementById('nameOverlay').style.display = 'flex';
+                document.getElementById('nameModal').style.display = 'block';
+            }
+        };
+
+        // 🌟 복구됨: 첫 방문 모달 플라잉 애니메이션 함수
+        function saveFirstTeacherName() {
+            const name = document.getElementById('firstTeacherInput').value.trim() || '선생님';
+            const modal = document.getElementById('nameModal');
+            const overlay = document.getElementById('nameOverlay');
+            const targetInput = document.getElementById('teacherName');
+
+            overlay.style.opacity = '0';
+            modal.classList.add('fly-away');
+
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                modal.style.display = 'none';
+                targetInput.value = name;
+                localStorage.setItem("teacherName", name);
+                
+                targetInput.classList.add('highlight-input');
+                setTimeout(() => targetInput.classList.remove('highlight-input'), 800);
+            }, 600);
+        }
+
         function switchView(view) {
             document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -199,7 +245,6 @@
             }
         }
 
-        // 탭 렌더링
         function renderTabs() {
             const tabsDiv = document.getElementById('classTabs');
             tabsDiv.innerHTML = '';
@@ -220,7 +265,6 @@
             });
         }
 
-        // 상점 부여 화면 렌더링
         function renderStudents(cls) {
             if(!cls || !classData[cls]) return;
             document.getElementById('currentClassLabel').textContent = `${cls} 명단`;
@@ -239,7 +283,6 @@
             });
         }
 
-        // 통계 로드
         function loadStats() {
             document.getElementById('statsTitle').textContent = `${currentClass} 누적 순위`;
             const list = document.getElementById('statsList');
@@ -261,7 +304,6 @@
                 }).catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">통계를 불러오지 못했습니다.</div>'; });
         }
 
-        // 최근 기록 로드
         function loadHistory() {
             const list = document.getElementById('historyList');
             const teacher = document.getElementById('teacherName').value.trim();
@@ -286,7 +328,6 @@
                 }).catch(() => { list.innerHTML = '<div class="text-center py-10 text-red-400">기록을 조회하지 못했습니다.</div>'; });
         }
 
-        // 기록 삭제
         function deleteLog(rowId) {
             Swal.fire({
                 title: '<span style="font-size: 20px;">기록을 삭제하시겠어요?</span>', text: "오늘 기록하신 내역만 지워집니다.", icon: 'warning',
@@ -294,21 +335,18 @@
                 customClass: { popup: 'rounded-2xl' }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // 🚀 [수정됨] "삭제 처리 중..."을 띄우지 않고 바로 삭제 완료 팝업을 띄웁니다!
+                    // 🚀 수정 유지됨: 0초 딜레이 '낙관적 UI' (응답 대기 없이 바로 화면에 완료 띄우기)
                     Swal.fire({ title: '삭제 완료!', text: '기록이 깔끔하게 지워졌습니다.', icon: 'success', confirmButtonColor: '#C4704A' }); 
                     
-                    // 구글 서버에 삭제 명령 던지기 (뒤에서 몰래 일함)
                     fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId }) });
-
-                    // 목록 갱신은 구글 서버가 지울 시간을 0.5초 정도 주고 호출해야 꼬이지 않습니다.
-                    setTimeout(() => { loadHistory(); }, 500);
+                    
+                    setTimeout(() => { loadHistory(); }, 500); // 0.5초 뒤 목록만 갱신
                 }
             });
         }
 
         function clearSelection() { selectedStudents.clear(); renderStudents(currentClass); }
 
-        // 상점 개수 조절 함수
         function changeMeritCount(delta) {
             currentMeritCount += delta;
             if (currentMeritCount < 1) currentMeritCount = 1;
@@ -362,11 +400,18 @@
             const multiIndicator = selectedStudents.size > 1 ? ` 외 ${selectedStudents.size - 1}명` : '';
             const nameDisplay = `${firstStudent}${multiIndicator}`;
 
-            // 🚀 [수정됨] "전송 중..." 단계를 아예 없애고, 버튼 누르자마자 0초 만에 "부여 완료!"를 띄워버립니다.
-            showToast(`✨ ${nameDisplay} 상점 부여 완료!`); 
+            // 🌟 수정됨: 토스트 알림 대신 화면 중앙에 삭제 완료처럼 확실하게 뜨는 모달(SweetAlert2) 적용 (0초 딜레이)
+            Swal.fire({
+                title: '✨ 상점 부여 완료!',
+                text: `${nameDisplay} 학생에게 상점이 기록되었습니다.`,
+                icon: 'success',
+                confirmButtonColor: '#C4704A',
+                customClass: { popup: 'rounded-2xl' }
+            });
+
             clearSelection(); 
 
-            // 구글 서버에는 백그라운드로 몰래 던져놓기만 하고 응답은 안 기다립니다. (no-cors의 장점)
+            // 서버 응답 대기 안 함
             fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'doPostData', logs: logs }) });
         }
 
@@ -375,9 +420,6 @@
             toast.textContent = msg; toast.style.backgroundColor = isError ? "#C4707A" : "#3D2B1F";
             toast.classList.remove('hidden'); setTimeout(() => toast.classList.add('hidden'), 2500);
         }
-
-        const savedTeacher = localStorage.getItem("teacherName");
-        if(savedTeacher) document.getElementById('teacherName').value = savedTeacher;
     </script>
 </body>
 </html>
