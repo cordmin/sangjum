@@ -197,7 +197,6 @@
             }
         };
 
-        // 🌟 복구됨: 첫 방문 모달 플라잉 애니메이션 함수
         function saveFirstTeacherName() {
             const name = document.getElementById('firstTeacherInput').value.trim() || '선생님';
             const modal = document.getElementById('nameModal');
@@ -226,14 +225,20 @@
 
             const giveControls = document.getElementById('giveControls');
             const classContainer = document.getElementById('classTabContainer');
+            const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
 
             if(view === 'give') {
+                if (currentClass === '전체') {
+                    currentClass = sortedClasses[0] || '';
+                }
                 giveControls.classList.remove('hidden');
                 classContainer.classList.remove('hidden');
+                renderTabs();
                 renderStudents(currentClass);
             } else if(view === 'stats') {
                 giveControls.classList.add('hidden');
                 classContainer.classList.remove('hidden');
+                renderTabs();
                 loadStats();
             } else {
                 giveControls.classList.add('hidden');
@@ -245,8 +250,16 @@
         function renderTabs() {
             const tabsDiv = document.getElementById('classTabs');
             tabsDiv.innerHTML = '';
+            
+            const isStatsActive = !document.getElementById('view-stats').classList.contains('hidden');
             const sortedClasses = Object.keys(classData).sort((a, b) => parseInt(a) - parseInt(b));
-            sortedClasses.forEach(cls => {
+            
+            let tabList = [...sortedClasses];
+            if (isStatsActive) {
+                tabList.unshift("전체");
+            }
+            
+            tabList.forEach(cls => {
                 const btn = document.createElement('button');
                 const isActive = cls === currentClass;
                 btn.className = `shrink-0 px-5 py-2.5 rounded-full font-bold text-sm transition-colors ${isActive ? 'bg-[#3D2B1F] text-white' : 'bg-[#F5EFE6] text-[#6B5247]'}`;
@@ -281,8 +294,84 @@
         }
 
         function loadStats() {
-            document.getElementById('statsTitle').textContent = `${currentClass} 누적 순위`;
             const list = document.getElementById('statsList');
+            
+            if (currentClass === '전체') {
+                document.getElementById('statsTitle').textContent = `반별 누적 순위`;
+                list.innerHTML = '<div class="text-center py-10 font-bold text-gray-500">데이터를 분석 중입니다...</div>';
+                
+                fetch(WEB_APP_URL + "?action=getStatsData")
+                    .then(res => res.json())
+                    .then(stats => {
+                        list.innerHTML = '';
+                        
+                        const classMap = {};
+                        Object.keys(classData).forEach(cls => {
+                            const num = cls.replace('반', '');
+                            classMap[num] = 0;
+                        });
+                        
+                        stats.forEach(s => {
+                            const num = s.classNum.toString();
+                            if (classMap[num] !== undefined) {
+                                classMap[num] += s.total;
+                            } else {
+                                classMap[num] = s.total;
+                            }
+                        });
+                        
+                        const classStats = Object.keys(classMap).map(num => ({
+                            classNum: num,
+                            total: classMap[num]
+                        })).sort((a, b) => b.total - a.total);
+                        
+                        if(classStats.length === 0) {
+                            list.innerHTML = '<div class="text-center py-10 text-gray-400">학급별 데이터가 존재하지 않습니다.</div>';
+                            return;
+                        }
+                        
+                        classStats.forEach((s, idx) => {
+                            const item = document.createElement('div');
+                            
+                            let rankIcon = `${idx + 1}위`;
+                            let itemStyle = "";
+                            let rankColorClass = "text-[#64748b]";
+                            
+                            if (idx === 0) {
+                                rankIcon = "🥇 1위";
+                                itemStyle = "background-color: rgba(241, 196, 15, 0.08); border-color: rgba(241, 196, 15, 0.3);";
+                                rankColorClass = "text-[#b78a00] text-[1.15rem]";
+                            } else if (idx === 1) {
+                                rankIcon = "🥈 2위";
+                                itemStyle = "background-color: rgba(149, 165, 166, 0.1); border-color: rgba(149, 165, 166, 0.3);";
+                                rankColorClass = "text-[#4a5568]";
+                            } else if (idx === 2) {
+                                rankIcon = "🥉 3위";
+                                itemStyle = "background-color: rgba(230, 126, 34, 0.07); border-color: rgba(230, 126, 34, 0.2);";
+                                rankColorClass = "text-[#a03d00]";
+                            }
+                            
+                            item.className = 'bg-white p-4 rounded-xl flex justify-between items-center shadow-sm border border-[#e2e8f0]';
+                            if (itemStyle) {
+                                item.setAttribute('style', itemStyle);
+                            }
+                            
+                            item.innerHTML = `
+                                <div>
+                                    <span class="font-black ${rankColorClass} mr-3">${rankIcon}</span>
+                                    <span class="font-black text-[#1e293b] text-[1.1rem]">${s.classNum}반</span>
+                                </div>
+                                <div class="font-black text-lg text-[#475569]">${s.total}점</div>
+                            `;
+                            list.appendChild(item);
+                        });
+                    }).catch(() => {
+                        list.innerHTML = '<div class="text-center py-10 text-red-400">통계를 불러오지 못했습니다.</div>';
+                    });
+                return;
+            }
+            
+            document.getElementById('statsTitle').textContent = `${currentClass} 누적 순위`;
             list.innerHTML = '<div class="text-center py-10 font-bold text-gray-500">데이터를 분석 중입니다...</div>';
             
             fetch(WEB_APP_URL + "?action=getStatsData")
