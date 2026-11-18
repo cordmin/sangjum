@@ -161,7 +161,8 @@
     </div>
 
     <script>
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzZPqYRPvoLo_NIjCaqYuWDVI8cU6NYt6Wbqr5z5GNUIaUkX2GQ_vkOoSngeW-sJ8xs/exec";
+        // 데이터 통신 전용 주소입니다. 프로그램 접속 주소는 https://cordmin.github.io/sangjum/ 입니다.
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzZPqYRPvoLo_NIjCaqYuWDVI8cU6NYt6Wbqr5z5GNUIaUkX2GQ_vkOoSngeW-sJ8xs/exec";
 
         let classData = {};
         let currentClass = '';
@@ -171,7 +172,7 @@
 
         window.onload = function() {
             // 🚀 가장 먼저 출발 (동기화 속도 최적화 유지)
-            fetch(WEB_APP_URL + "?action=getStudentData")
+            fetch(GAS_API_URL + "?action=getStudentData")
                 .then(res => res.json())
                 .then(data => {
                     classData = data;
@@ -300,7 +301,7 @@
                 document.getElementById('statsTitle').textContent = `반별 누적 순위`;
                 list.innerHTML = '<div class="text-center py-10 font-bold text-gray-500">데이터를 분석 중입니다...</div>';
                 
-                fetch(WEB_APP_URL + "?action=getStatsData")
+                fetch(GAS_API_URL + "?action=getStatsData")
                     .then(res => res.json())
                     .then(stats => {
                         list.innerHTML = '';
@@ -374,7 +375,7 @@
             document.getElementById('statsTitle').textContent = `${currentClass} 누적 순위`;
             list.innerHTML = '<div class="text-center py-10 font-bold text-gray-500">데이터를 분석 중입니다...</div>';
             
-            fetch(WEB_APP_URL + "?action=getStatsData")
+            fetch(GAS_API_URL + "?action=getStatsData")
                 .then(res => res.json())
                 .then(stats => {
                     list.innerHTML = '';
@@ -396,7 +397,7 @@
             if(!teacher) { list.innerHTML = '<div class="text-center py-10 font-bold text-red-500">화면 상단에 선생님 성함을 먼저 입력해주세요!</div>'; return; }
             list.innerHTML = '<div class="text-center py-10 font-bold text-gray-500">기록을 불러오는 중입니다...</div>';
             
-            fetch(WEB_APP_URL + "?action=getTodayLogs&teacherName=" + encodeURIComponent(teacher))
+            fetch(GAS_API_URL + "?action=getTodayLogs&teacherName=" + encodeURIComponent(teacher))
                 .then(res => res.json())
                 .then(history => {
                     list.innerHTML = '';
@@ -424,7 +425,7 @@
                     // 🚀 수정 유지됨: 0초 딜레이 '낙관적 UI' (응답 대기 없이 바로 화면에 완료 띄우기)
                     Swal.fire({ title: '삭제 완료!', text: '기록이 깔끔하게 지워졌습니다.', icon: 'success', confirmButtonColor: '#C4704A' }); 
                     
-                    fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId }) });
+                    fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'deleteLogByRowId', rowId: rowId }) });
                     
                     setTimeout(() => { loadHistory(); }, 500); // 0.5초 뒤 목록만 갱신
                 }
@@ -498,7 +499,7 @@
             clearSelection(); 
 
             // 서버 응답 대기 안 함
-            fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'doPostData', logs: logs }) });
+            fetch(GAS_API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'doPostData', logs: logs }) });
         }
 
         function showToast(msg, isError = false) {
